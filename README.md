@@ -39,6 +39,8 @@
 
 Δες το [σχηματικό σύνδεσης](docs/wiring.png) στην αρχή της σελίδας.
 
+Για μόνιμη εγκατάσταση σε **ηλεκτρολογικό πίνακα** (κουτί ράγας DIN 4 θέσεων, PCB, λίστα υλικών) δες τον φάκελο [hardware/](hardware/README.md).
+
 ### Εγκατάσταση
 
 1. Εγκατέστησε το **Arduino IDE** (ή το arduino-cli) με το πακέτο πλακετών **esp32** και επίλεξε πλακέτα `ESP32C3 Dev Module`, με `USB CDC On Boot: Enabled`.
@@ -98,6 +100,8 @@ It also calculates the **cost** of your consumption using **Greek hourly day-ahe
   - 10k/10k voltage divider (1.65V bias) with a 10µF capacitor from the divider midpoint to GND
 
 See the [wiring diagram](docs/wiring.png) at the top of the page.
+
+For a permanent install in a **distribution board** (4-module DIN-rail enclosure, PCB, BOM) see [hardware/](hardware/README.md).
 
 ### Setup
 
