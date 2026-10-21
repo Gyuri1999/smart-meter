@@ -1,0 +1,13 @@
+# Κωδικοί / secrets
+smart_meter/secrets.h
+
+# Build output
+smart_meter/build/
+build/
+
+# Παλιά αντίγραφα με κωδικούς / old copies containing passwords
+backup/
+
+# macOS / editor
+.DS_Store
+.vscode/
