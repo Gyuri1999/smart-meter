@@ -5,6 +5,8 @@
 > ⚠️ **Προσοχή / Warning:** Το κύκλωμα συνδέεται στα **230V AC**. Δούλευε πάντα με το κύκλωμα αποσυνδεδεμένο από το δίκτυο, με μόνωση, κουτί και ασφάλεια.
 > The circuit connects to **230V AC mains**. Always work with it disconnected, use insulation, an enclosure and a fuse.
 
+![Σχηματικό σύνδεσης / Wiring diagram](docs/wiring.png)
+
 ---
 
 ## 🇬🇷 Ελληνικά
@@ -34,6 +36,8 @@
 - **ZMPT101B** — αισθητήρας τάσης → `GPIO2`
 - **SCT-013-030** (30A/1V) — αισθητήρας ρεύματος (clamp) → `GPIO0`
   - διαιρέτης τάσης 10k/10k (bias 1.65V) και πυκνωτής 10µF από το μέσο του διαιρέτη στη γείωση
+
+Δες το [σχηματικό σύνδεσης](docs/wiring.png) στην αρχή της σελίδας.
 
 ### Εγκατάσταση
 
@@ -92,6 +96,8 @@ It also calculates the **cost** of your consumption using **Greek hourly day-ahe
 - **ZMPT101B** — voltage sensor → `GPIO2`
 - **SCT-013-030** (30A/1V) — current clamp → `GPIO0`
   - 10k/10k voltage divider (1.65V bias) with a 10µF capacitor from the divider midpoint to GND
+
+See the [wiring diagram](docs/wiring.png) at the top of the page.
 
 ### Setup
 
