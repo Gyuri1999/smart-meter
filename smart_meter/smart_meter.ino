@@ -81,7 +81,14 @@ static const int      HALF_CYCLES  = 40;     // 39 ημιπερίοδοι = 19.5
 static const uint32_t TIMEOUT_MS   = 1500;   // ασφάλεια αν δεν υπάρχει σήμα
 static const double   FILT_TAU     = 1024.0; // σταθερά φίλτρου DC offset
 static const float    NOISE_V      = 5.0f;   // κάτω από αυτό -> 0 (Volt)
-static const float    NOISE_I      = 1.0f;   // κάτω από αυτό -> 0 (θόρυβος με το 100A/1V ~0.64 A)
+static const float    NOISE_I      = 0.5f;   // κάτω από αυτό -> 0 (ΜΕΤΑ την αφαίρεση θορύβου)
+
+// Θόρυβος του καναλιού ρεύματος χωρίς φορτίο, σε mV rms στο pin (μετρημένο
+// 09/11/2026 με το SCT-013 100A/1V: 6.39 mV = ~0.64 A). Ο θόρυβος δεν
+// σχετίζεται με το σήμα, άρα προστίθεται "τετραγωνικά" στο RMS:
+//   Iμετρ² = Iπραγμ² + Iθορ²   ->   Iπραγμ = sqrt(Iμετρ² - Iθορ²)
+// Δεν επηρεάζει την πραγματική ισχύ (W), μόνο το Irms και τα VA.
+static const double   NOISE_I_PIN_MV = 6.4;
 
 // Αν το clamp είναι ανάποδα και δεν βολεύει να το γυρίσεις (π.χ. μόνιμη
 // εγκατάσταση), βάλε 1 και αντιστρέφεται το πρόσημο της ισχύος από λογισμικό.
@@ -149,6 +156,14 @@ static void logf(const char *fmt, ...) {
 }
 
 // ------------------------------------------------------------------ ΜΕΤΡΗΣΗ
+// Αφαιρεί τον θόρυβο NOISE_I_PIN_MV από ένα RMS σε mV (βλ. ορισμό του).
+// ΠΡΟΣΟΧΗ: πρέπει να μείνει ΜΕΤΑ το struct Reading, αλλιώς το Arduino
+// βάζει τις αυτόματες δηλώσεις συναρτήσεων πριν από αυτό και δεν κάνει build.
+static double removeNoise(double rms_mV) {
+  double d = rms_mV * rms_mV - NOISE_I_PIN_MV * NOISE_I_PIN_MV;
+  return (d > 0) ? sqrt(d) : 0.0;
+}
+
 static Reading measure() {
   Reading r = {0, 0, 0, 0, 0, 0, 5000, 0, false};
 
@@ -228,7 +243,7 @@ static Reading measure() {
 
   // 3) Υπολογισμοί (mV -> V, μετά επί τους συντελεστές βαθμονόμησης)
   double vrms_pin = sqrt(sumV / n) / 1000.0;   // V στο pin
-  double irms_pin = sqrt(sumI / n) / 1000.0;   // V στο pin
+  double irms_pin = removeNoise(sqrt(sumI / n)) / 1000.0;   // V στο pin, χωρίς θόρυβο
 
   r.vrms      = VCAL * vrms_pin;
   r.irms      = ICAL * irms_pin;
@@ -551,7 +566,7 @@ static void currentOnlyReport(uint32_t windowMs) {
     n++;
   }
 
-  float irms = (n > 9) ? (float)(ICAL * sqrt(sumI / n) / 1000.0) : 0.0f;
+  float irms = (n > 9) ? (float)(ICAL * removeNoise(sqrt(sumI / n)) / 1000.0) : 0.0f;
   logf("[I-only] Irms=%.3f A | ptp=%dmV (%d..%d) | %d δείγματα σε %ums -> %.1f kSPS\n",
        irms, mx - mn, mn, mx, n, windowMs, n / (float)windowMs);
 }
