@@ -54,7 +54,9 @@ static const int PIN_CURR = 0;   // SCT-013   sig  (ADC1_CH0)
 // ------------------------------------------------------------- ΒΑΘΜΟΝΟΜΗΣΗ
 // VCAL: πόσα Volt AC του δικτύου αντιστοιχούν σε 1 V στο pin.
 //       Ξεκίνα με 260.0 και διόρθωσε: VCAL_new = VCAL_old * (Vπολύμετρου / Vσειριακής)
-float VCAL = 341.0f;
+// Βαθμονόμηση 09/11/2026 με πολύμετρο: πολύμετρο 235 V, σειριακή 221.26 V
+// -> 341 * 235 / 221.26 = 362.2
+float VCAL = 362.2f;
 
 // ICAL: πόσα Ampere αντιστοιχούν σε 1 V στο pin.
 //       SCT-013 100A/1V απευθείας στο pin -> 100.0
@@ -92,7 +94,12 @@ static const double   NOISE_I_PIN_MV = 6.4;
 
 // Αν το clamp είναι ανάποδα και δεν βολεύει να το γυρίσεις (π.χ. μόνιμη
 // εγκατάσταση), βάλε 1 και αντιστρέφεται το πρόσημο της ισχύος από λογισμικό.
-#define INVERT_CURRENT 0
+#define INVERT_CURRENT 1   // 09/11/2026: το SCT ήταν ανάποδα στη δοκιμή (P < 0)
+
+// ΔΟΚΙΜΗ crosstalk: το ADC του ESP32-C3 κρατάει υπόλοιπο από το προηγούμενο
+// κανάλι (την τάση, με μεγάλο πλάτος). Μια "άδεια" ανάγνωση του ρεύματος
+// πριν από την κανονική το αδειάζει. 1 = ενεργό.
+#define ADC_DUMMY_READ 0   // δοκιμάστηκε 09/11/2026: δεν αλλάζει το Irms, άρα όχι crosstalk
 
 #define PRINT_DEBUG 1                        // 1 = τύπωσε offsets/δείγματα
 
@@ -196,6 +203,9 @@ static Reading measure() {
 
     int    rawV = analogReadMilliVolts(PIN_VOLT);
     double sV = rawV;
+#if ADC_DUMMY_READ
+    analogReadMilliVolts(PIN_CURR);                 // άδεια ανάγνωση (crosstalk)
+#endif
     double sI = analogReadMilliVolts(PIN_CURR);
 
     if (rawV < r.vmin) r.vmin = rawV;
@@ -584,6 +594,9 @@ static void phaseSweep() {
   uint32_t t0 = micros();
   for (int n = 0; n < SWEEP_N; n++) {
     double sV = analogReadMilliVolts(PIN_VOLT);
+#if ADC_DUMMY_READ
+    analogReadMilliVolts(PIN_CURR);                 // άδεια ανάγνωση (crosstalk)
+#endif
     double sI = analogReadMilliVolts(PIN_CURR);
     offsetV += (sV - offsetV) / FILT_TAU;
     offsetI += (sI - offsetI) / FILT_TAU;
